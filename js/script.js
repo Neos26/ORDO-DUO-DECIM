@@ -797,6 +797,121 @@ function showSlide(index) {
   modal?.addEventListener('click', event => { if (event.target === modal) closeModal(); });
   document.addEventListener('keydown', event => { if (event.key === 'Escape' && modal && !modal.hidden) closeModal(); });
 
+  /* ---------- FEEDBACK WALL (homepage) ----------
+     Shared wall via /api/feedback (Vercel Blob). When the API is
+     unreachable (file:// preview, offline) the wall and submissions
+     fall back to this browser's own store. Cards are built with
+     textContent so visitor messages can never inject markup. */
+  const feedbackSection = document.querySelector('.feedback');
+  if (feedbackSection) {
+    const feedbackForm = feedbackSection.querySelector('.feedback-form');
+    const wall = feedbackSection.querySelector('.feedback-wall');
+    const status = feedbackSection.querySelector('.form-status');
+    const LOCAL_KEY = 'ordo-feedback';
+
+    const makeCard = entry => {
+      const card = document.createElement('article');
+      card.className = 'feedback-card';
+      const head = document.createElement('div');
+      head.className = 'feedback-card-head';
+      const mark = document.createElement('span');
+      mark.className = 'feedback-card-mark';
+      mark.setAttribute('aria-hidden', 'true');
+      mark.textContent = '✦';
+      const who = document.createElement('span');
+      who.className = 'feedback-card-name';
+      who.textContent = entry.name || 'Anonymous';
+      const when = document.createElement('time');
+      const date = new Date(entry.at);
+      if (!isNaN(date)) {
+        when.dateTime = date.toISOString();
+        when.textContent = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+      }
+      head.append(mark, who, when);
+      const text = document.createElement('p');
+      text.className = 'feedback-card-text';
+      text.textContent = entry.text;
+      card.append(head, text);
+      return card;
+    };
+
+    const renderWall = entries => {
+      wall.textContent = '';
+      if (!entries.length) {
+        const empty = document.createElement('p');
+        empty.className = 'feedback-empty';
+        empty.textContent = 'No feedback yet — be the first to share.';
+        wall.append(empty);
+        return;
+      }
+      entries.forEach(entry => wall.append(makeCard(entry)));
+    };
+
+    const localEntries = () => {
+      try { return JSON.parse(localStorage.getItem(LOCAL_KEY)) || []; } catch { return []; }
+    };
+
+    fetch('/api/feedback')
+      .then(response => { if (!response.ok) throw new Error(); return response.json(); })
+      .then(data => renderWall(Array.isArray(data.feedback) ? data.feedback : []))
+      .catch(() => renderWall(localEntries().reverse()));
+
+    feedbackForm?.addEventListener('submit', async event => {
+      event.preventDefault();
+      const textInput = feedbackForm.elements.text;
+      const payload = {
+        name: feedbackForm.elements.name.value.trim(),
+        text: textInput.value.trim(),
+        website: feedbackForm.elements.website.value
+      };
+      if (payload.text.length < 3) {
+        status.className = 'form-status is-error';
+        status.textContent = 'Please write a message first.';
+        textInput.focus();
+        return;
+      }
+      const submit = feedbackForm.querySelector('[type="submit"]');
+      submit.disabled = true;
+      status.className = 'form-status is-sending';
+      status.textContent = 'Sharing your feedback…';
+
+      let response = null;
+      let data = {};
+      try {
+        response = await fetch('/api/feedback', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        data = await response.json().catch(() => ({}));
+      } catch { /* API unreachable → local fallback below */ }
+
+      if (response && response.ok) {
+        wall.querySelector('.feedback-empty')?.remove();
+        wall.prepend(makeCard(data.feedback || payload));
+        status.className = 'form-status is-success';
+        status.textContent = 'Thank you — your feedback is on the wall.';
+        feedbackForm.reset();
+      } else if (response) {
+        // API reachable but refused (validation, rate limit) — surface it
+        status.className = 'form-status is-error';
+        status.textContent = data.error || 'Could not share your feedback — try again.';
+      } else {
+        // local preview / offline: keep the entry in this browser
+        const entry = { name: payload.name || 'Anonymous', text: payload.text, at: new Date().toISOString() };
+        const stored = localEntries();
+        stored.push(entry);
+        try { localStorage.setItem(LOCAL_KEY, JSON.stringify(stored)); } catch { /* private mode */ }
+        wall.querySelector('.feedback-empty')?.remove();
+        wall.prepend(makeCard(entry));
+        status.className = 'form-status is-success';
+        status.textContent = 'Saved — shown here on your device.';
+        feedbackForm.reset();
+      }
+      submit.disabled = false;
+    });
+  }
+
   const form = document.querySelector('.contact-form');
   if (form) {
     form.action = 'https://formsubmit.co/c927bce93a8b2e16b581ecb1466f12f9';

@@ -1376,6 +1376,47 @@ body[data-page="terms"] .ambient-field__veil{
 }
 
 /* ============================================================
+   FEEDBACK WALL — homepage form + shared wall fed by
+   /api/feedback (Vercel Blob). Falls back to this browser's
+   localStorage when the API is unreachable (file:// preview).
+   ============================================================ */
+.feedback-grid{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:clamp(3rem,7vw,7rem);align-items:start}
+.feedback-copy h2{
+  font-size:clamp(3rem,5vw,5rem);line-height:.88;margin:1.25rem 0 1.6rem;
+  border-left:5px solid var(--gold-mid);padding-left:2rem
+}
+.feedback-lede{color:var(--muted);max-width:27rem;margin-bottom:2rem;line-height:1.8}
+.feedback-form{
+  position:relative;display:grid;gap:1.6rem;max-width:30rem;
+  background:linear-gradient(135deg,rgba(217,184,95,.11),transparent 60%);
+  border:1px solid rgba(241,216,137,.28);
+  padding:clamp(1.5rem,4vw,2.5rem)
+}
+.feedback-form .submit{justify-self:start;margin-top:.4rem}
+.feedback-form .submit:disabled{opacity:.55;cursor:wait}
+.feedback-wall{display:grid;gap:1.1rem;align-content:start;min-height:12rem}
+.feedback-empty{
+  color:var(--muted);font:400 italic 1.2rem/1.6 var(--serif);
+  border:1px dashed rgba(241,216,137,.35);border-radius:1rem;
+  padding:3rem 2rem;text-align:center
+}
+.feedback-card{
+  position:relative;background:var(--bg-alt);
+  border:1px solid rgba(241,216,137,.3);border-radius:1rem;
+  padding:1.5rem 1.6rem;box-shadow:0 14px 34px rgba(0,0,0,.25)
+}
+.feedback-card-head{display:flex;align-items:center;gap:.7rem;margin-bottom:.75rem}
+.feedback-card-mark{color:var(--gold-bright);font-size:.75rem;filter:drop-shadow(0 0 6px rgba(223,196,126,.4))}
+.feedback-card-name{font:600 .68rem/1.4 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--accent-light)}
+.feedback-card-head time{margin-left:auto;font:600 .58rem/1.4 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.feedback-card-text{color:var(--text);line-height:1.8;overflow-wrap:anywhere;white-space:pre-wrap}
+@media(max-width:900px){
+  .feedback-grid{grid-template-columns:1fr;gap:3rem}
+  .feedback-copy h2{padding-left:1.25rem}
+  .feedback-form{max-width:none}
+}
+
+/* ============================================================
    EVENT PRODUCTS — single-column "film spread", Decimist then
    Oat Cookies. Each row: a two-column head, then a stage where
    the portrait POSTER is pinned OVER one corner of the wide
