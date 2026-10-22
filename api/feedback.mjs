@@ -40,8 +40,9 @@ export async function GET() {
       }
     }));
     return json(200, { feedback: entries.filter(Boolean) });
-  } catch {
-    return json(500, { error: 'Feedback is unavailable right now.' });
+  } catch (error) {
+    console.error('feedback list failed:', error);
+    return json(500, { error: 'Feedback is unavailable right now.', detail: String(error?.message || error) });
   }
 }
 
@@ -72,8 +73,9 @@ export async function POST(request) {
   const entry = { name: name || 'Anonymous', text, at: new Date().toISOString() };
   try {
     await put(`${PREFIX}${Date.now()}-${crypto.randomUUID().slice(0, 8)}.json`, JSON.stringify(entry), { access: 'public' });
-  } catch {
-    return json(500, { error: 'Could not save your feedback — please try again.' });
+  } catch (error) {
+    console.error('feedback put failed:', error);
+    return json(500, { error: 'Could not save your feedback — please try again.', detail: String(error?.message || error) });
   }
   return json(201, { feedback: entry });
 }
