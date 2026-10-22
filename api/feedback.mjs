@@ -1,4 +1,4 @@
-import { getDownloadUrl, list, put } from '@vercel/blob';
+import { get, list, put } from '@vercel/blob';
 
 const PREFIX = 'feedback/';
 const MAX_LISTED = 40;
@@ -31,10 +31,11 @@ export async function GET() {
       .slice(0, MAX_LISTED);
     const entries = await Promise.all(recent.map(async blob => {
       try {
-        // the store is private — sign each URL server-side before fetching
-        const response = await fetch(getDownloadUrl(blob.url));
-        if (!response.ok) return null;
-        const entry = await response.json();
+        // private store: get() authenticates against blob storage itself,
+        // plain URL fetches (even with ?download=1) would 403
+        const res = await get(blob.url, { access: 'private' });
+        if (!res?.stream) return null;
+        const entry = JSON.parse(await new Response(res.stream).text());
         return typeof entry?.text === 'string' ? entry : null;
       } catch {
         return null;
