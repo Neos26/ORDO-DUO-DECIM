@@ -1,4 +1,4 @@
-import { list, put } from '@vercel/blob';
+import { getDownloadUrl, list, put } from '@vercel/blob';
 
 const PREFIX = 'feedback/';
 const MAX_LISTED = 40;
@@ -31,7 +31,8 @@ export async function GET() {
       .slice(0, MAX_LISTED);
     const entries = await Promise.all(recent.map(async blob => {
       try {
-        const response = await fetch(blob.url);
+        // the store is private — sign each URL server-side before fetching
+        const response = await fetch(getDownloadUrl(blob.url));
         if (!response.ok) return null;
         const entry = await response.json();
         return typeof entry?.text === 'string' ? entry : null;
@@ -42,7 +43,7 @@ export async function GET() {
     return json(200, { feedback: entries.filter(Boolean) });
   } catch (error) {
     console.error('feedback list failed:', error);
-    return json(500, { error: 'Feedback is unavailable right now.', detail: String(error?.message || error) });
+    return json(500, { error: 'Feedback is unavailable right now.' });
   }
 }
 
@@ -72,10 +73,10 @@ export async function POST(request) {
 
   const entry = { name: name || 'Anonymous', text, at: new Date().toISOString() };
   try {
-    await put(`${PREFIX}${Date.now()}-${crypto.randomUUID().slice(0, 8)}.json`, JSON.stringify(entry), { access: 'public' });
+    await put(`${PREFIX}${Date.now()}-${crypto.randomUUID().slice(0, 8)}.json`, JSON.stringify(entry), { access: 'private' });
   } catch (error) {
     console.error('feedback put failed:', error);
-    return json(500, { error: 'Could not save your feedback — please try again.', detail: String(error?.message || error) });
+    return json(500, { error: 'Could not save your feedback — please try again.' });
   }
   return json(201, { feedback: entry });
 }
