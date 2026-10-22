@@ -206,6 +206,21 @@
                 placeholder="Anonymous" autocomplete="name"></div>
             <div class="field"><label for="fb-text">Message</label><textarea id="fb-text" name="text" rows="4"
                 required maxlength="1000" placeholder="Tell us what you think…"></textarea></div>
+            <div class="field fb-rating-field">
+              <span class="fb-rating-label" id="fb-rating-label">Your rating</span>
+              <div class="star-rating" role="radiogroup" aria-labelledby="fb-rating-label">
+                <input type="radio" name="rating" id="fb-star1" value="1" required><label for="fb-star1"
+                  aria-label="1 star">★</label>
+                <input type="radio" name="rating" id="fb-star2" value="2"><label for="fb-star2"
+                  aria-label="2 stars">★</label>
+                <input type="radio" name="rating" id="fb-star3" value="3"><label for="fb-star3"
+                  aria-label="3 stars">★</label>
+                <input type="radio" name="rating" id="fb-star4" value="4"><label for="fb-star4"
+                  aria-label="4 stars">★</label>
+                <input type="radio" name="rating" id="fb-star5" value="5"><label for="fb-star5"
+                  aria-label="5 stars">★</label>
+              </div>
+            </div>
             <button class="text-link submit" type="submit">Share feedback <b>→</b></button>
             <p class="form-status" role="status"></p>
           </form>

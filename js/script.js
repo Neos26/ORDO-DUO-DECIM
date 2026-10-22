@@ -821,13 +821,29 @@ function showSlide(index) {
       const who = document.createElement('span');
       who.className = 'feedback-card-name';
       who.textContent = entry.name || 'Anonymous';
+      head.append(mark, who);
+      const rating = Math.round(Number(entry.rating));
+      if (rating >= 1 && rating <= 5) {
+        const stars = document.createElement('span');
+        stars.className = 'feedback-card-rating';
+        stars.setAttribute('aria-label', `Rated ${rating} out of 5`);
+        const filled = document.createElement('span');
+        filled.setAttribute('aria-hidden', 'true');
+        filled.textContent = '★'.repeat(rating);
+        const blank = document.createElement('span');
+        blank.className = 'is-empty';
+        blank.setAttribute('aria-hidden', 'true');
+        blank.textContent = '☆'.repeat(5 - rating);
+        stars.append(filled, blank);
+        head.append(stars);
+      }
       const when = document.createElement('time');
       const date = new Date(entry.at);
       if (!isNaN(date)) {
         when.dateTime = date.toISOString();
         when.textContent = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
       }
-      head.append(mark, who, when);
+      head.append(when);
       const text = document.createElement('p');
       text.className = 'feedback-card-text';
       text.textContent = entry.text;
@@ -870,6 +886,14 @@ function showSlide(index) {
         textInput.focus();
         return;
       }
+      const rating = Number(feedbackForm.elements.rating?.value);
+      if (!(rating >= 1 && rating <= 5)) {
+        status.className = 'form-status is-error';
+        status.textContent = 'Please pick a star rating.';
+        feedbackForm.querySelector('.star-rating input')?.focus();
+        return;
+      }
+      payload.rating = rating;
       const submit = feedbackForm.querySelector('[type="submit"]');
       submit.disabled = true;
       status.className = 'form-status is-sending';
@@ -898,7 +922,7 @@ function showSlide(index) {
         status.textContent = data.error || 'Could not share your feedback — try again.';
       } else {
         // local preview / offline: keep the entry in this browser
-        const entry = { name: payload.name || 'Anonymous', text: payload.text, at: new Date().toISOString() };
+        const entry = { name: payload.name || 'Anonymous', text: payload.text, rating: payload.rating, at: new Date().toISOString() };
         const stored = localEntries();
         stored.push(entry);
         try { localStorage.setItem(LOCAL_KEY, JSON.stringify(stored)); } catch { /* private mode */ }

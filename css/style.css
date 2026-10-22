@@ -1394,6 +1394,22 @@ body[data-page="terms"] .ambient-field__veil{
 }
 .feedback-form .submit{justify-self:start;margin-top:.4rem}
 .feedback-form .submit:disabled{opacity:.55;cursor:wait}
+/* star rating — radios stay in the a11y tree, labels carry the gold */
+.fb-rating-label{display:block;text-transform:uppercase;letter-spacing:.15em;font-size:.62rem;color:#d5bd7d;margin-bottom:.6rem}
+.star-rating{position:relative;display:inline-flex;gap:.45rem}
+.star-rating input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.star-rating label{
+  display:inline-block;cursor:pointer;font-size:1.55rem;line-height:1;
+  color:rgba(241,216,137,.3);text-transform:none;letter-spacing:0;
+  transition:color .2s,transform .2s
+}
+.star-rating label:hover{color:var(--gold-bright);transform:translateY(-2px)}
+.star-rating:has(#fb-star1:checked) label:nth-of-type(-n+1),
+.star-rating:has(#fb-star2:checked) label:nth-of-type(-n+2),
+.star-rating:has(#fb-star3:checked) label:nth-of-type(-n+3),
+.star-rating:has(#fb-star4:checked) label:nth-of-type(-n+4),
+.star-rating:has(#fb-star5:checked) label:nth-of-type(-n+5){color:var(--gold-bright)}
+.star-rating input:focus-visible+label{outline:1px solid var(--gold-bright);outline-offset:3px;border-radius:3px}
 .feedback-wall{display:grid;gap:1.1rem;align-content:start;min-height:12rem}
 .feedback-empty{
   color:var(--muted);font:400 italic 1.2rem/1.6 var(--serif);
@@ -1405,9 +1421,11 @@ body[data-page="terms"] .ambient-field__veil{
   border:1px solid rgba(241,216,137,.3);border-radius:1rem;
   padding:1.5rem 1.6rem;box-shadow:0 14px 34px rgba(0,0,0,.25)
 }
-.feedback-card-head{display:flex;align-items:center;gap:.7rem;margin-bottom:.75rem}
+.feedback-card-head{display:flex;align-items:center;gap:.7rem;margin-bottom:.75rem;flex-wrap:wrap}
 .feedback-card-mark{color:var(--gold-bright);font-size:.75rem;filter:drop-shadow(0 0 6px rgba(223,196,126,.4))}
 .feedback-card-name{font:600 .68rem/1.4 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--accent-light)}
+.feedback-card-rating{display:inline-flex;letter-spacing:.1em;font-size:.8rem;line-height:1;color:var(--gold-bright)}
+.feedback-card-rating .is-empty{color:rgba(241,216,137,.28)}
 .feedback-card-head time{margin-left:auto;font:600 .58rem/1.4 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
 .feedback-card-text{color:var(--text);line-height:1.8;overflow-wrap:anywhere;white-space:pre-wrap}
 @media(max-width:900px){

@@ -70,8 +70,12 @@ export async function POST(request) {
   if (text.length < 3) {
     return json(400, { error: 'Please write a short message first.' });
   }
+  const rating = Math.round(Number(body.rating));
+  if (!Number.isFinite(rating) || rating < 1 || rating > 5) {
+    return json(400, { error: 'Please pick a star rating (1–5).' });
+  }
 
-  const entry = { name: name || 'Anonymous', text, at: new Date().toISOString() };
+  const entry = { name: name || 'Anonymous', text, rating, at: new Date().toISOString() };
   try {
     await put(`${PREFIX}${Date.now()}-${crypto.randomUUID().slice(0, 8)}.json`, JSON.stringify(entry), { access: 'private' });
   } catch (error) {
