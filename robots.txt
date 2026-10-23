@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /login.html
+Disallow: /member.html
+Disallow: /admin.html
+
+Sitemap: https://ordo-duo-decim.vercel.app/sitemap.xml
