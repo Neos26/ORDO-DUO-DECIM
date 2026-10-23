@@ -797,144 +797,197 @@ function showSlide(index) {
   modal?.addEventListener('click', event => { if (event.target === modal) closeModal(); });
   document.addEventListener('keydown', event => { if (event.key === 'Escape' && modal && !modal.hidden) closeModal(); });
 
-  /* ---------- FEEDBACK WALL (homepage) ----------
-     Shared wall via /api/feedback (Vercel Blob). When the API is
-     unreachable (file:// preview, offline) the wall and submissions
-     fall back to this browser's own store. Cards are built with
-     textContent so visitor messages can never inject markup. */
-  const feedbackSection = document.querySelector('.feedback');
-  if (feedbackSection) {
-    const feedbackForm = feedbackSection.querySelector('.feedback-form');
-    const wall = feedbackSection.querySelector('.feedback-wall');
-    const status = feedbackSection.querySelector('.form-status');
-    const LOCAL_KEY = 'ordo-feedback';
+  /* ---------- FEEDBACK — floating button (every page) + wall (homepage) ----------
+     The form lives in a panel toggled by the corner ✦ FAB so it exists on
+     every page; the wall element only exists on the homepage. Shared wall
+     via /api/feedback (Vercel Blob); when the API is unreachable (file://
+     preview, offline) submissions fall back to this browser's own store.
+     Cards are built with textContent so messages can never inject markup. */
+  const fabRoot = document.createElement('div');
+  fabRoot.className = 'fb-fab-root';
+  fabRoot.innerHTML = `
+    <div class="fb-panel" id="fb-panel" hidden>
+      <div class="fb-panel-head">
+        <h3>Share your <em>feedback</em></h3>
+        <button type="button" class="fb-panel-close" aria-label="Close feedback form">✕</button>
+      </div>
+      <form class="feedback-form" novalidate>
+        <input type="text" name="website" class="form-trap" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <div class="field"><label for="fb-name">Name</label><input id="fb-name" name="name" maxlength="60"
+            placeholder="Anonymous" autocomplete="name"></div>
+        <div class="field"><label for="fb-text">Message</label><textarea id="fb-text" name="text" rows="4"
+            required maxlength="1000" placeholder="Tell us what you think…"></textarea></div>
+        <div class="field fb-rating-field">
+          <span class="fb-rating-label" id="fb-rating-label">Your rating</span>
+          <div class="star-rating" role="radiogroup" aria-labelledby="fb-rating-label">
+            <input type="radio" name="rating" id="fb-star1" value="1" required><label for="fb-star1"
+              aria-label="1 star">★</label>
+            <input type="radio" name="rating" id="fb-star2" value="2"><label for="fb-star2"
+              aria-label="2 stars">★</label>
+            <input type="radio" name="rating" id="fb-star3" value="3"><label for="fb-star3"
+              aria-label="3 stars">★</label>
+            <input type="radio" name="rating" id="fb-star4" value="4"><label for="fb-star4"
+              aria-label="4 stars">★</label>
+            <input type="radio" name="rating" id="fb-star5" value="5"><label for="fb-star5"
+              aria-label="5 stars">★</label>
+          </div>
+        </div>
+        <button class="text-link submit" type="submit">Share feedback <b>→</b></button>
+        <p class="form-status" role="status"></p>
+      </form>
+    </div>
+    <button type="button" class="fb-fab" aria-expanded="false" aria-controls="fb-panel"
+      aria-label="Open the feedback form"><span aria-hidden="true">✦</span></button>
+  `;
+  document.body.append(fabRoot);
 
-    const makeCard = entry => {
-      const card = document.createElement('article');
-      card.className = 'feedback-card';
-      const head = document.createElement('div');
-      head.className = 'feedback-card-head';
-      const mark = document.createElement('span');
-      mark.className = 'feedback-card-mark';
-      mark.setAttribute('aria-hidden', 'true');
-      mark.textContent = '✦';
-      const who = document.createElement('span');
-      who.className = 'feedback-card-name';
-      who.textContent = entry.name || 'Anonymous';
-      head.append(mark, who);
-      const rating = Math.round(Number(entry.rating));
-      if (rating >= 1 && rating <= 5) {
-        const stars = document.createElement('span');
-        stars.className = 'feedback-card-rating';
-        stars.setAttribute('aria-label', `Rated ${rating} out of 5`);
-        const filled = document.createElement('span');
-        filled.setAttribute('aria-hidden', 'true');
-        filled.textContent = '★'.repeat(rating);
-        const blank = document.createElement('span');
-        blank.className = 'is-empty';
-        blank.setAttribute('aria-hidden', 'true');
-        blank.textContent = '☆'.repeat(5 - rating);
-        stars.append(filled, blank);
-        head.append(stars);
-      }
-      const when = document.createElement('time');
-      const date = new Date(entry.at);
-      if (!isNaN(date)) {
-        when.dateTime = date.toISOString();
-        when.textContent = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
-      }
-      head.append(when);
-      const text = document.createElement('p');
-      text.className = 'feedback-card-text';
-      text.textContent = entry.text;
-      card.append(head, text);
-      return card;
-    };
+  const fbFab = fabRoot.querySelector('.fb-fab');
+  const fbPanel = fabRoot.querySelector('.fb-panel');
+  const fbSetOpen = open => {
+    fbPanel.hidden = !open;
+    fbFab.setAttribute('aria-expanded', String(open));
+    if (open) fbPanel.querySelector('input[name="name"]')?.focus();
+  };
+  fbFab.addEventListener('click', () => fbSetOpen(fbPanel.hidden));
+  fbPanel.querySelector('.fb-panel-close').addEventListener('click', () => fbSetOpen(false));
+  document.addEventListener('keydown', event => { if (event.key === 'Escape' && !fbPanel.hidden) fbSetOpen(false); });
 
-    const renderWall = entries => {
-      wall.textContent = '';
-      if (!entries.length) {
-        const empty = document.createElement('p');
-        empty.className = 'feedback-empty';
-        empty.textContent = 'No feedback yet — be the first to share.';
-        wall.append(empty);
-        return;
-      }
-      entries.forEach(entry => wall.append(makeCard(entry)));
-    };
+  const feedbackForm = fabRoot.querySelector('.feedback-form');
+  const status = feedbackForm.querySelector('.form-status');
+  const wall = document.querySelector('.feedback-wall');
+  const LOCAL_KEY = 'ordo-feedback';
 
-    const localEntries = () => {
-      try { return JSON.parse(localStorage.getItem(LOCAL_KEY)) || []; } catch { return []; }
-    };
+  const makeCard = entry => {
+    const card = document.createElement('article');
+    card.className = 'feedback-card';
+    const head = document.createElement('div');
+    head.className = 'feedback-card-head';
+    const mark = document.createElement('span');
+    mark.className = 'feedback-card-mark';
+    mark.setAttribute('aria-hidden', 'true');
+    mark.textContent = '✦';
+    const who = document.createElement('span');
+    who.className = 'feedback-card-name';
+    who.textContent = entry.name || 'Anonymous';
+    head.append(mark, who);
+    const rating = Math.round(Number(entry.rating));
+    if (rating >= 1 && rating <= 5) {
+      const stars = document.createElement('span');
+      stars.className = 'feedback-card-rating';
+      stars.setAttribute('aria-label', `Rated ${rating} out of 5`);
+      const filled = document.createElement('span');
+      filled.setAttribute('aria-hidden', 'true');
+      filled.textContent = '★'.repeat(rating);
+      const blank = document.createElement('span');
+      blank.className = 'is-empty';
+      blank.setAttribute('aria-hidden', 'true');
+      blank.textContent = '☆'.repeat(5 - rating);
+      stars.append(filled, blank);
+      head.append(stars);
+    }
+    const when = document.createElement('time');
+    const date = new Date(entry.at);
+    if (!isNaN(date)) {
+      when.dateTime = date.toISOString();
+      when.textContent = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+    head.append(when);
+    const text = document.createElement('p');
+    text.className = 'feedback-card-text';
+    text.textContent = entry.text;
+    card.append(head, text);
+    return card;
+  };
 
+  const renderWall = entries => {
+    wall.textContent = '';
+    if (!entries.length) {
+      const empty = document.createElement('p');
+      empty.className = 'feedback-empty';
+      empty.textContent = 'No feedback yet — be the first to share.';
+      wall.append(empty);
+      return;
+    }
+    entries.forEach(entry => wall.append(makeCard(entry)));
+  };
+
+  const localEntries = () => {
+    try { return JSON.parse(localStorage.getItem(LOCAL_KEY)) || []; } catch { return []; }
+  };
+
+  if (wall) {
     fetch('/api/feedback')
       .then(response => { if (!response.ok) throw new Error(); return response.json(); })
       .then(data => renderWall(Array.isArray(data.feedback) ? data.feedback : []))
       .catch(() => renderWall(localEntries().reverse()));
+  }
 
-    feedbackForm?.addEventListener('submit', async event => {
-      event.preventDefault();
-      const textInput = feedbackForm.elements.text;
-      const payload = {
-        name: feedbackForm.elements.name.value.trim(),
-        text: textInput.value.trim(),
-        website: feedbackForm.elements.website.value
-      };
-      if (payload.text.length < 3) {
-        status.className = 'form-status is-error';
-        status.textContent = 'Please write a message first.';
-        textInput.focus();
-        return;
-      }
-      const rating = Number(feedbackForm.elements.rating?.value);
-      if (!(rating >= 1 && rating <= 5)) {
-        status.className = 'form-status is-error';
-        status.textContent = 'Please pick a star rating.';
-        feedbackForm.querySelector('.star-rating input')?.focus();
-        return;
-      }
-      payload.rating = rating;
-      const submit = feedbackForm.querySelector('[type="submit"]');
-      submit.disabled = true;
-      status.className = 'form-status is-sending';
-      status.textContent = 'Sharing your feedback…';
+  feedbackForm.addEventListener('submit', async event => {
+    event.preventDefault();
+    const textInput = feedbackForm.elements.text;
+    const payload = {
+      name: feedbackForm.elements.name.value.trim(),
+      text: textInput.value.trim(),
+      website: feedbackForm.elements.website.value
+    };
+    if (payload.text.length < 3) {
+      status.className = 'form-status is-error';
+      status.textContent = 'Please write a message first.';
+      textInput.focus();
+      return;
+    }
+    const rating = Number(feedbackForm.elements.rating?.value);
+    if (!(rating >= 1 && rating <= 5)) {
+      status.className = 'form-status is-error';
+      status.textContent = 'Please pick a star rating.';
+      feedbackForm.querySelector('.star-rating input')?.focus();
+      return;
+    }
+    payload.rating = rating;
+    const submit = feedbackForm.querySelector('[type="submit"]');
+    submit.disabled = true;
+    status.className = 'form-status is-sending';
+    status.textContent = 'Sharing your feedback…';
 
-      let response = null;
-      let data = {};
-      try {
-        response = await fetch('/api/feedback', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        data = await response.json().catch(() => ({}));
-      } catch { /* API unreachable → local fallback below */ }
+    let response = null;
+    let data = {};
+    try {
+      response = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      data = await response.json().catch(() => ({}));
+    } catch { /* API unreachable → local fallback below */ }
 
-      if (response && response.ok) {
+    if (response && response.ok) {
+      if (wall) {
         wall.querySelector('.feedback-empty')?.remove();
         wall.prepend(makeCard(data.feedback || payload));
-        status.className = 'form-status is-success';
-        status.textContent = 'Thank you — your feedback is on the wall.';
-        feedbackForm.reset();
-      } else if (response) {
-        // API reachable but refused (validation, rate limit) — surface it
-        status.className = 'form-status is-error';
-        status.textContent = data.error || 'Could not share your feedback — try again.';
-      } else {
-        // local preview / offline: keep the entry in this browser
-        const entry = { name: payload.name || 'Anonymous', text: payload.text, rating: payload.rating, at: new Date().toISOString() };
-        const stored = localEntries();
-        stored.push(entry);
-        try { localStorage.setItem(LOCAL_KEY, JSON.stringify(stored)); } catch { /* private mode */ }
+      }
+      status.className = 'form-status is-success';
+      status.textContent = 'Thank you — your feedback is on the wall.';
+      feedbackForm.reset();
+    } else if (response) {
+      // API reachable but refused (validation, rate limit) — surface it
+      status.className = 'form-status is-error';
+      status.textContent = data.error || 'Could not share your feedback — try again.';
+    } else {
+      // local preview / offline: keep the entry in this browser
+      const entry = { name: payload.name || 'Anonymous', text: payload.text, rating: payload.rating, at: new Date().toISOString() };
+      const stored = localEntries();
+      stored.push(entry);
+      try { localStorage.setItem(LOCAL_KEY, JSON.stringify(stored)); } catch { /* private mode */ }
+      if (wall) {
         wall.querySelector('.feedback-empty')?.remove();
         wall.prepend(makeCard(entry));
-        status.className = 'form-status is-success';
-        status.textContent = 'Saved — shown here on your device.';
-        feedbackForm.reset();
       }
-      submit.disabled = false;
-    });
-  }
+      status.className = 'form-status is-success';
+      status.textContent = wall ? 'Saved — shown here on your device.' : 'Saved on this device — visit the homepage wall to see it.';
+      feedbackForm.reset();
+    }
+    submit.disabled = false;
+  });
 
   const form = document.querySelector('.contact-form');
   if (form) {

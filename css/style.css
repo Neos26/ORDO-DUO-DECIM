@@ -1577,3 +1577,81 @@ body[data-page="terms"] .ambient-field__veil{
   .product-row:hover .product-poster,.product-row:hover .product-poster img{transform:none}
   .product-poster::before{display:none}
 }
+
+/* ============================================================
+   UPCOMING EVENT BANNER — IBM Days 2026, sits right under the
+   hero so the announcement is the first thing after the fold.
+   ============================================================ */
+.event-banner{
+  background:var(--bg-alt);border-block:1px solid rgba(223,196,126,.2);
+  padding-block:clamp(4rem,7vw,6.5rem);overflow:hidden
+}
+.event-banner::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(circle at 18% 30%,rgba(216,188,120,.06),transparent 42%)
+}
+.event-banner-grid{
+  display:grid;grid-template-columns:minmax(0,.75fr) minmax(0,1.25fr);
+  gap:clamp(3rem,7vw,6rem);align-items:center;position:relative
+}
+.event-banner-poster{position:relative;margin:0;max-width:26rem;justify-self:center}
+.event-banner-poster img{
+  display:block;width:100%;height:auto;
+  border:1px solid rgba(241,216,137,.45);
+  box-shadow:0 26px 60px rgba(0,0,0,.5),0 0 45px rgba(217,184,95,.12)
+}
+.event-banner-poster::before{
+  content:"";position:absolute;inset:-.7rem;border:1px solid rgba(241,216,137,.25);pointer-events:none
+}
+.event-banner-copy h2{
+  font-size:clamp(3rem,5.5vw,5.4rem);line-height:.88;margin:1.1rem 0 1.8rem;
+  border-left:5px solid var(--gold-mid);padding-left:2rem
+}
+.event-banner-lede{
+  font:400 clamp(1.2rem,1.8vw,1.45rem)/1.45 var(--serif);
+  color:var(--accent-light);max-width:34rem;margin-bottom:1.4rem
+}
+.event-banner-body{color:var(--muted);line-height:1.85;max-width:36rem;margin-bottom:1.8rem}
+.event-banner-tags{display:flex;flex-wrap:wrap;gap:.7rem}
+.event-banner-tags span{
+  border:1px solid rgba(241,216,137,.35);color:var(--accent);
+  font:600 .6rem/1 var(--sans);letter-spacing:.14em;
+  padding:.55rem .9rem;border-radius:999px
+}
+@media(max-width:900px){
+  .event-banner-grid{grid-template-columns:1fr;gap:3.5rem}
+  .event-banner-copy h2{padding-left:1.25rem}
+  .event-banner-poster{max-width:20rem;justify-self:start;margin-left:.2rem}
+}
+
+/* ============================================================
+   FEEDBACK FAB — floating ✦ button on every page opens the
+   shared feedback form panel; the wall stays homepage-only.
+   ============================================================ */
+.fb-fab-root{position:fixed;right:1.4rem;bottom:1.4rem;z-index:90;display:flex;flex-direction:column;align-items:flex-end}
+.fb-fab{
+  width:3.5rem;height:3.5rem;border-radius:50%;cursor:pointer;flex:none;
+  border:1px solid var(--gold-bright);
+  background:linear-gradient(160deg,var(--gold-bright),var(--gold-mid) 55%,var(--gold-deep));
+  color:#17140d;font-size:1.25rem;line-height:1;
+  box-shadow:0 10px 28px rgba(0,0,0,.5),0 0 22px rgba(223,196,126,.35);
+  transition:transform .3s var(--ease-out),box-shadow .3s var(--ease-out)
+}
+.fb-fab:hover{transform:translateY(-3px);box-shadow:0 14px 34px rgba(0,0,0,.55),0 0 30px rgba(223,196,126,.5)}
+.fb-fab span{display:block;transition:transform .35s var(--ease-out)}
+.fb-fab[aria-expanded=true] span{transform:rotate(45deg)}
+.fb-panel{
+  width:min(24rem,calc(100vw - 2.8rem));margin-bottom:1rem;
+  background:var(--bg-alt);border:1px solid rgba(241,216,137,.35);
+  box-shadow:0 24px 70px rgba(0,0,0,.55),0 0 40px rgba(217,184,95,.08);
+  padding:clamp(1.4rem,4vw,2rem)
+}
+.fb-panel[hidden]{display:none}
+.fb-panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;margin-bottom:1.4rem}
+.fb-panel-head h3{font-size:2rem;line-height:.95}
+.fb-panel-close{background:none;border:0;color:var(--muted);cursor:pointer;font:300 1rem/1 var(--sans);padding:.3rem}
+.fb-panel-close:hover{color:var(--accent-light)}
+.fb-panel .feedback-form{max-width:none;background:none;border:0;padding:0}
+@media(max-width:600px){
+  .fb-fab-root{right:1rem;bottom:1rem}
+}
