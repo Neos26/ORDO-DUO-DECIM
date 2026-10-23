@@ -1466,6 +1466,7 @@ body[data-page="terms"] .ambient-field__veil{
 .product-row-head h3{font:400 clamp(3.2rem,7vw,7rem)/.82 var(--serif);letter-spacing:-.04em;color:var(--text);margin:.7rem 0 0}
 .product-row-head h3::after{content:"";display:block;width:clamp(4rem,10vw,7rem);height:1px;margin-top:1.4rem;background:linear-gradient(90deg,var(--gold-bright),transparent)}
 .product-desc{color:var(--muted);max-width:26rem;padding-bottom:.9rem;border-left:1px solid var(--gold-mid);padding-left:1.5rem}
+.product-desc b{display:block;margin-top:.7rem;color:var(--accent-light);font:600 .72rem/1.3 var(--sans);letter-spacing:.14em;text-transform:uppercase}
 
 /* --- stage: POSTER | hairline rail | FILM — side by side, no overlap.
    Two columns sized so both pieces land on the SAME height; the film
