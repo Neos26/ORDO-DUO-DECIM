@@ -1655,3 +1655,50 @@ body[data-page="terms"] .ambient-field__veil{
 @media(max-width:600px){
   .fb-fab-root{right:1rem;bottom:1rem}
 }
+
+/* ============================================================
+   ACCOUNT PAGES — login/signup, member bookings, org dashboard.
+   Reuses .field/.form-status from the contact form.
+   ============================================================ */
+.auth-form{display:grid;gap:1.6rem;max-width:30rem}
+.auth-form .submit{justify-self:start}
+.auth-switch{color:var(--muted);font-size:.8rem}
+.auth-switch-btn{background:none;border:0;color:var(--accent);cursor:pointer;font:inherit;text-decoration:underline;padding:0}
+.auth-switch-btn:hover{color:var(--accent-light)}
+.account-layout{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:clamp(3rem,7vw,6rem);align-items:start}
+.booking-form{display:grid;gap:1.6rem}
+.booking-form .submit{justify-self:start}
+.account-row{display:grid;grid-template-columns:1fr 1fr;gap:1.6rem}
+.account-side{display:grid;gap:1.5rem;align-content:start}
+.account-side .eyebrow{margin-bottom:.4rem}
+.booking-list{display:grid;gap:1rem}
+.booking-empty{color:var(--muted);font:400 italic 1.1rem/1.6 var(--serif)}
+.booking-row{
+  border:1px solid rgba(241,216,137,.22);
+  background:linear-gradient(135deg,rgba(217,184,95,.08),transparent 60%);
+  padding:1.25rem 1.5rem
+}
+.booking-row-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:.75rem 1.25rem;margin-bottom:.6rem}
+.booking-row-type{font:600 .66rem/1.4 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--accent-light)}
+.booking-row-email{font:600 .62rem/1.4 var(--sans);letter-spacing:.08em;color:var(--muted);overflow-wrap:anywhere}
+.booking-row time{margin-left:auto;font:600 .58rem/1.4 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.booking-row-count{color:var(--gold-bright);font:600 .62rem/1.4 var(--sans);letter-spacing:.1em}
+.booking-row-message{color:var(--text);line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere}
+.booking-row.is-hidden{opacity:.55}
+.admin-badge{
+  border:1px solid rgba(241,216,137,.4);color:var(--gold-bright);
+  font:600 .56rem/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;padding:.3rem .55rem
+}
+.admin-actions{display:flex;gap:.7rem;margin-top:.9rem}
+.admin-actions button{
+  background:none;border:1px solid rgba(241,216,137,.35);color:var(--accent);cursor:pointer;
+  font:600 .58rem/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;padding:.5rem .85rem;
+  transition:border-color .3s,color .3s
+}
+.admin-actions button:hover{border-color:var(--gold-bright);color:var(--gold-bright)}
+.logout-btn{justify-self:start}
+.field input[type=date],.field input[type=number]{color-scheme:dark;color:var(--text)}
+@media(max-width:900px){
+  .account-layout{grid-template-columns:1fr;gap:3rem}
+  .account-row{grid-template-columns:1fr}
+}

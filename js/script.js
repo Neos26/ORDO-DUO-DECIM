@@ -989,6 +989,378 @@ function showSlide(index) {
     submit.disabled = false;
   });
 
+  /* ---------- ACCOUNT — header link (every page) + login/member/admin pages ----------
+     Basic school-project auth: email + password compared server-side,
+     session kept in an HttpOnly cookie. See api/auth.mjs + lib/auth.mjs. */
+  fetch('/api/auth/me')
+    .then(response => (response.ok ? response.json() : null))
+    .then(data => {
+      const user = data?.user;
+      if (!user) return;
+      const label = user.role === 'org' ? 'Dashboard' : 'My bookings';
+      const href = user.role === 'org' ? 'admin.html' : 'member.html';
+      document.querySelectorAll('.nav-right').forEach(group => {
+        const link = document.createElement('a');
+        link.href = href;
+        link.textContent = label;
+        group.prepend(link);
+      });
+      document.querySelectorAll('.mobile-menu').forEach(menu => {
+        const link = document.createElement('a');
+        link.href = href;
+        link.textContent = label;
+        menu.append(link);
+      });
+    })
+    .catch(() => { /* offline / file:// preview — skip quietly */ });
+
+  const authForm = document.querySelector('.auth-form');
+  if (authForm) {
+    const status = authForm.querySelector('.form-status');
+    const nameField = authForm.querySelector('.auth-name-field');
+    const submit = authForm.querySelector('[type="submit"]');
+    const switchBtn = authForm.querySelector('.auth-switch-btn');
+    const switchPrompt = authForm.querySelector('.auth-switch-prompt');
+    let mode = 'login';
+    const setMode = next => {
+      mode = next;
+      nameField.hidden = mode !== 'signup';
+      authForm.elements.name.required = mode === 'signup';
+      submit.firstChild.textContent = mode === 'signup' ? 'Create account ' : 'Sign in ';
+      switchPrompt.textContent = mode === 'signup' ? 'Already have an account?' : 'New here?';
+      switchBtn.textContent = mode === 'signup' ? 'Sign in' : 'Create an account';
+      status.textContent = '';
+    };
+    switchBtn.addEventListener('click', () => setMode(mode === 'login' ? 'signup' : 'login'));
+
+    // already signed in? go straight to the right page
+    fetch('/api/auth/me')
+      .then(response => (response.ok ? response.json() : null))
+      .then(data => {
+        if (data?.user) location.replace(data.user.role === 'org' ? 'admin.html' : 'member.html');
+      })
+      .catch(() => {});
+
+    authForm.addEventListener('submit', async event => {
+      event.preventDefault();
+      const email = authForm.elements.email.value.trim();
+      const password = authForm.elements.password.value;
+      const name = authForm.elements.name.value.trim();
+      if (!email || !password) {
+        status.className = 'form-status is-error';
+        status.textContent = 'Email and password are required.';
+        return;
+      }
+      if (mode === 'signup' && !name) {
+        status.className = 'form-status is-error';
+        status.textContent = 'Please enter your name.';
+        authForm.elements.name.focus();
+        return;
+      }
+      submit.disabled = true;
+      status.className = 'form-status is-sending';
+      status.textContent = mode === 'signup' ? 'Creating your account…' : 'Signing in…';
+      try {
+        const response = await fetch('/api/auth', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ action: mode, email, password, name })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          status.className = 'form-status is-error';
+          status.textContent = data.error || 'Something went wrong — try again.';
+          submit.disabled = false;
+          return;
+        }
+        location.replace(data.user?.role === 'org' ? 'admin.html' : 'member.html');
+      } catch {
+        status.className = 'form-status is-error';
+        status.textContent = 'Could not reach the server — check your connection.';
+        submit.disabled = false;
+      }
+    });
+  }
+
+  const bookingForm = document.querySelector('.booking-form');
+  if (bookingForm) {
+    const status = bookingForm.querySelector('.form-status');
+    const list = document.querySelector('.booking-list');
+    const nameInput = bookingForm.elements.name;
+
+    const renderBookings = entries => {
+      list.textContent = '';
+      if (!entries.length) {
+        const empty = document.createElement('p');
+        empty.className = 'booking-empty';
+        empty.textContent = 'No bookings yet — your submissions will appear here.';
+        list.append(empty);
+        return;
+      }
+      entries.forEach(entry => {
+        const card = document.createElement('article');
+        card.className = 'booking-row';
+        const head = document.createElement('div');
+        head.className = 'booking-row-head';
+        const type = document.createElement('span');
+        type.className = 'booking-row-type';
+        type.textContent = entry.type;
+        const when = document.createElement('time');
+        when.textContent = entry.date;
+        const count = document.createElement('span');
+        count.className = 'booking-row-count';
+        count.textContent = `${entry.headcount} guests`;
+        head.append(type, when, count);
+        const text = document.createElement('p');
+        text.className = 'booking-row-message';
+        text.textContent = entry.message;
+        card.append(head, text);
+        list.append(card);
+      });
+    };
+
+    const loadBookings = () => fetch('/api/bookings')
+      .then(response => {
+        if (response.status === 401) { location.replace('login.html'); return null; }
+        if (!response.ok) throw new Error();
+        return response.json();
+      })
+      .then(data => { if (data) renderBookings(Array.isArray(data.bookings) ? data.bookings : []); })
+      .catch(() => {
+        list.textContent = '';
+        const empty = document.createElement('p');
+        empty.className = 'booking-empty';
+        empty.textContent = 'Could not load bookings — refresh the page.';
+        list.append(empty);
+      });
+
+    fetch('/api/auth/me')
+      .then(response => (response.ok ? response.json() : null))
+      .then(data => {
+        if (!data?.user) { location.replace('login.html'); return; }
+        if (!nameInput.value) nameInput.placeholder = data.user.name || 'Your full name';
+        loadBookings();
+      })
+      .catch(() => loadBookings());
+
+    bookingForm.addEventListener('submit', async event => {
+      event.preventDefault();
+      const payload = {
+        name: nameInput.value.trim(),
+        type: bookingForm.elements.type.value,
+        date: bookingForm.elements.date.value,
+        headcount: bookingForm.elements.headcount.value,
+        message: bookingForm.elements.message.value.trim()
+      };
+      if (!payload.type) {
+        status.className = 'form-status is-error';
+        status.textContent = 'Please pick an event type.';
+        return;
+      }
+      if (!payload.date) {
+        status.className = 'form-status is-error';
+        status.textContent = 'Please pick an event date.';
+        return;
+      }
+      if (!payload.headcount || Number(payload.headcount) < 1) {
+        status.className = 'form-status is-error';
+        status.textContent = 'Please enter a headcount.';
+        return;
+      }
+      if (payload.message.length < 3) {
+        status.className = 'form-status is-error';
+        status.textContent = 'Please add a short message about the event.';
+        return;
+      }
+      const submit = bookingForm.querySelector('[type="submit"]');
+      submit.disabled = true;
+      status.className = 'form-status is-sending';
+      status.textContent = 'Sending your booking…';
+      try {
+        const response = await fetch('/api/bookings', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          status.className = 'form-status is-error';
+          status.textContent = data.error || 'Could not save your booking — try again.';
+        } else {
+          status.className = 'form-status is-success';
+          status.textContent = 'Booking sent — the organization will get back to you.';
+          bookingForm.reset();
+          loadBookings();
+        }
+      } catch {
+        status.className = 'form-status is-error';
+        status.textContent = 'Could not reach the server — check your connection.';
+      }
+      submit.disabled = false;
+    });
+  }
+
+  document.querySelectorAll('.logout-btn').forEach(button => {
+    button.addEventListener('click', async () => {
+      try {
+        await fetch('/api/auth', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ action: 'logout' })
+        });
+      } catch { /* still leave the page */ }
+      location.replace('login.html');
+    });
+  });
+
+  const adminFeedbackList = document.querySelector('.admin-feedback-list');
+  if (adminFeedbackList) {
+    const adminBookingList = document.querySelector('.admin-booking-list');
+
+    const emptyNote = text => {
+      const note = document.createElement('p');
+      note.className = 'booking-empty';
+      note.textContent = text;
+      return note;
+    };
+
+    const renderAdminBookings = entries => {
+      adminBookingList.textContent = '';
+      if (!entries.length) {
+        adminBookingList.append(emptyNote('No bookings yet.'));
+        return;
+      }
+      entries.forEach(entry => {
+        const card = document.createElement('article');
+        card.className = 'booking-row';
+        const head = document.createElement('div');
+        head.className = 'booking-row-head';
+        const type = document.createElement('span');
+        type.className = 'booking-row-type';
+        type.textContent = entry.type;
+        const who = document.createElement('span');
+        who.className = 'booking-row-email';
+        who.textContent = `${entry.name} · ${entry.email}`;
+        const when = document.createElement('time');
+        when.textContent = entry.date;
+        const count = document.createElement('span');
+        count.className = 'booking-row-count';
+        count.textContent = `${entry.headcount} guests`;
+        head.append(type, who, when, count);
+        const text = document.createElement('p');
+        text.className = 'booking-row-message';
+        text.textContent = entry.message;
+        card.append(head, text);
+        adminBookingList.append(card);
+      });
+    };
+
+    const moderate = async (id, action) => {
+      try {
+        const response = await fetch('/api/feedback', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ id, action })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          alert(data.error || 'That action failed — try again.');
+          return;
+        }
+        loadAdmin();
+      } catch {
+        alert('Could not reach the server — check your connection.');
+      }
+    };
+
+    const renderAdminFeedback = entries => {
+      adminFeedbackList.textContent = '';
+      if (!entries.length) {
+        adminFeedbackList.append(emptyNote('No feedback yet.'));
+        return;
+      }
+      entries.forEach(entry => {
+        const card = document.createElement('article');
+        card.className = entry.hidden ? 'booking-row is-hidden' : 'booking-row';
+        const head = document.createElement('div');
+        head.className = 'booking-row-head';
+        const who = document.createElement('span');
+        who.className = 'booking-row-type';
+        who.textContent = entry.name || 'Anonymous';
+        head.append(who);
+        const rating = Math.round(Number(entry.rating));
+        if (rating >= 1 && rating <= 5) {
+          const stars = document.createElement('span');
+          stars.className = 'booking-row-count';
+          stars.textContent = '★'.repeat(rating) + '☆'.repeat(5 - rating);
+          head.append(stars);
+        }
+        if (entry.hidden) {
+          const badge = document.createElement('span');
+          badge.className = 'admin-badge';
+          badge.textContent = 'Hidden';
+          head.append(badge);
+        }
+        const when = document.createElement('time');
+        const date = new Date(entry.at);
+        if (!isNaN(date)) {
+          when.textContent = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+        head.append(when);
+        const text = document.createElement('p');
+        text.className = 'booking-row-message';
+        text.textContent = entry.text;
+        const actions = document.createElement('div');
+        actions.className = 'admin-actions';
+        const hideBtn = document.createElement('button');
+        hideBtn.type = 'button';
+        hideBtn.textContent = entry.hidden ? 'Unhide' : 'Hide';
+        hideBtn.addEventListener('click', () => moderate(entry.id, entry.hidden ? 'unhide' : 'hide'));
+        const deleteBtn = document.createElement('button');
+        deleteBtn.type = 'button';
+        deleteBtn.textContent = 'Delete';
+        deleteBtn.addEventListener('click', () => {
+          if (confirm('Delete this feedback permanently?')) moderate(entry.id, 'delete');
+        });
+        actions.append(hideBtn, deleteBtn);
+        card.append(head, text, actions);
+        adminFeedbackList.append(card);
+      });
+    };
+
+    const loadAdmin = () => {
+      Promise.all([
+        fetch('/api/bookings').then(response => (response.ok ? response.json() : { bookings: [] })),
+        fetch('/api/feedback?all=1').then(response => (response.ok ? response.json() : { feedback: [] }))
+      ])
+        .then(([bookings, feedback]) => {
+          renderAdminBookings(Array.isArray(bookings.bookings) ? bookings.bookings : []);
+          renderAdminFeedback(Array.isArray(feedback.feedback) ? feedback.feedback : []);
+        })
+        .catch(() => {
+          adminBookingList.textContent = '';
+          adminBookingList.append(emptyNote('Could not load data — refresh the page.'));
+          adminFeedbackList.textContent = '';
+          adminFeedbackList.append(emptyNote('Could not load data — refresh the page.'));
+        });
+    };
+
+    fetch('/api/auth/me')
+      .then(response => (response.ok ? response.json() : null))
+      .then(data => {
+        if (!data?.user) { location.replace('login.html'); return; }
+        if (data.user.role !== 'org') {
+          adminBookingList.textContent = '';
+          adminBookingList.append(emptyNote('This dashboard is for the organization account only.'));
+          adminFeedbackList.textContent = '';
+          adminFeedbackList.append(emptyNote('This dashboard is for the organization account only.'));
+          return;
+        }
+        loadAdmin();
+      })
+      .catch(() => location.replace('login.html'));
+  }
+
   const form = document.querySelector('.contact-form');
   if (form) {
     form.action = 'https://formsubmit.co/c927bce93a8b2e16b581ecb1466f12f9';

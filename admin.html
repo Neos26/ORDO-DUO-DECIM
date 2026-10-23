@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Dashboard — Ordo Duo Decim</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Manrope:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/script.js" defer></script>
+</head>
+
+<body data-page="admin" id="top">
+    <header class="site-header">
+        <nav class="nav shell" aria-label="Main navigation">
+            <div class="nav-group nav-left"><a href="index.html">Home</a><a href="about.html">About</a><a
+                    href="activities.html">Activities</a></div><a class="brand" href="index.html" aria-label="Ordo Duo Decim home"><span
+                    class="brand-mark">✦</span> Ordo Duo Decim</a>
+            <div class="nav-group nav-right"><a href="projects.html">Events</a><a href="members.html">Members</a><a
+                    href="contact.html">Contact</a></div>
+            <button class="menu-toggle" aria-label="Open menu" aria-expanded="false"><span></span><span></span></button>
+        </nav>
+        <div class="mobile-menu"><a href="index.html">Home</a><a href="about.html">About</a><a href="members.html">Members</a><a
+                href="activities.html">Activities</a><a href="projects.html">Events</a><a
+                href="contact.html">Contact</a></div>
+    </header>
+    <main>
+        <section class="page-hero simple shell">
+            <div class="reveal">
+                <p class="eyebrow">ORGANIZATION</p>
+                <h1>Dashboard<br><em>&amp; moderation</em></h1>
+            </div>
+            <p class="page-intro reveal">Every booking and inquiry from members, plus the homepage feedback wall —
+                hide or delete anything that shouldn't be shown.</p>
+        </section>
+        <section class="account-layout shell section-pad">
+            <div class="account-side reveal">
+                <p class="eyebrow">ALL BOOKINGS &amp; INQUIRIES</p>
+                <div class="booking-list admin-booking-list" aria-live="polite">
+                    <p class="booking-empty">Loading…</p>
+                </div>
+            </div>
+            <div class="account-side reveal">
+                <p class="eyebrow">HOMEPAGE FEEDBACK WALL</p>
+                <div class="admin-feedback-list" aria-live="polite">
+                    <p class="booking-empty">Loading…</p>
+                </div>
+            </div>
+            <button type="button" class="text-link logout-btn reveal">Sign out <b>→</b></button>
+        </section>
+    </main>
+    <footer class="site-footer">
+        <div class="shell">
+            <blockquote>Building connections, creating experiences, and leaving <em>meaningful impact.</em></blockquote>
+            <div class="footer-grid">
+                <div><a class="brand" href="index.html"><span class="brand-mark">✦</span> ORDO DUO DECIM</a>
+                    <p></p>
+                </div>
+                <div>
+                    <h4>Organization</h4><a href="about.html">About</a><a href="members.html">Members</a><a
+                        href="activities.html">Activities</a><a href="projects.html">Events</a>
+                </div>
+                <div>
+                    <h4>Explore</h4><a href="projects.html">Events</a><a href="projects.html">Gallery</a><a
+                        href="contact.html#faq">FAQ</a>
+                </div>
+                <div>
+                    <h4>Follow us</h4><a href="#">Facebook ↗</a>
+                </div>
+            </div>
+            <div class="footer-bottom"><span>© 2025 Ordo Duo Decim</span><span>All Rights Reserved</span><a
+                    href="#top">Back to top ↑</a></div>
+        </div>
+    </footer>
+</body>
+
+</html>
