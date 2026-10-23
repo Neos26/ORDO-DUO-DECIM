@@ -992,7 +992,7 @@ function showSlide(index) {
   /* ---------- ACCOUNT — header link (every page) + login/member/admin pages ----------
      Basic school-project auth: email + password compared server-side,
      session kept in an HttpOnly cookie. See api/auth.mjs + lib/auth.mjs. */
-  fetch('/api/auth/me')
+  fetch('/api/auth')
     .then(response => (response.ok ? response.json() : null))
     .then(data => {
       const user = data?.user;
@@ -1034,7 +1034,7 @@ function showSlide(index) {
     switchBtn.addEventListener('click', () => setMode(mode === 'login' ? 'signup' : 'login'));
 
     // already signed in? go straight to the right page
-    fetch('/api/auth/me')
+    fetch('/api/auth')
       .then(response => (response.ok ? response.json() : null))
       .then(data => {
         if (data?.user) location.replace(data.user.role === 'org' ? 'admin.html' : 'member.html');
@@ -1134,7 +1134,7 @@ function showSlide(index) {
         list.append(empty);
       });
 
-    fetch('/api/auth/me')
+    fetch('/api/auth')
       .then(response => (response.ok ? response.json() : null))
       .then(data => {
         if (!data?.user) { location.replace('login.html'); return; }
@@ -1345,7 +1345,7 @@ function showSlide(index) {
         });
     };
 
-    fetch('/api/auth/me')
+    fetch('/api/auth')
       .then(response => (response.ok ? response.json() : null))
       .then(data => {
         if (!data?.user) { location.replace('login.html'); return; }
