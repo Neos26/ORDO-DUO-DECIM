@@ -1704,6 +1704,7 @@ body[data-page="terms"] .ambient-field__veil{
 }
 
 /* header Login / My bookings / Dashboard link — gold pill, far right */
+.nav-group{align-items:center}
 .nav a.nav-account{
   color:var(--accent);
   border:1px solid rgba(241,216,137,.55);
