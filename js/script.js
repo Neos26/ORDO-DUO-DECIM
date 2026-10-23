@@ -1000,12 +1000,14 @@ function showSlide(index) {
       const href = !user ? 'login.html' : user.role === 'org' ? 'admin.html' : 'member.html';
       document.querySelectorAll('.nav-right').forEach(group => {
         const link = document.createElement('a');
+        link.className = 'nav-account';
         link.href = href;
         link.textContent = label;
-        group.prepend(link);
+        group.append(link);
       });
       document.querySelectorAll('.mobile-menu').forEach(menu => {
         const link = document.createElement('a');
+        link.className = 'nav-account';
         link.href = href;
         link.textContent = label;
         menu.append(link);

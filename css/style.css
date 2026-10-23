@@ -1702,3 +1702,16 @@ body[data-page="terms"] .ambient-field__veil{
   .account-layout{grid-template-columns:1fr;gap:3rem}
   .account-row{grid-template-columns:1fr}
 }
+
+/* header Login / My bookings / Dashboard link — gold pill, far right */
+.nav a.nav-account{
+  color:var(--accent);
+  border:1px solid rgba(241,216,137,.55);
+  padding:.55rem 1.05rem;border-radius:999px;
+  transition:background .3s,color .3s,border-color .3s
+}
+.nav a.nav-account:hover{background:rgba(241,216,137,.12);color:var(--gold-bright);border-color:var(--gold-bright)}
+.mobile-menu a.nav-account{
+  font-size:1rem;letter-spacing:.18em;color:var(--accent);
+  border:1px solid rgba(241,216,137,.45);padding:.9rem 1.6rem;border-radius:999px
+}
