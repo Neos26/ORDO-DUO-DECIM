@@ -36,9 +36,9 @@ export async function GET(request) {
       .slice(0, MAX_LISTED);
     const entries = await Promise.all(recent.map(async blob => {
       try {
-        // private store: get() authenticates against blob storage itself,
-        // plain URL fetches (even with ?download=1) would 403
-        const res = await get(blob.url, { access: 'private' });
+        // private store: get() authenticates against blob storage itself;
+        // useCache:false so hide/unhide/delete show up immediately
+        const res = await get(blob.url, { access: 'private', useCache: false });
         if (!res?.stream) return null;
         const entry = JSON.parse(await new Response(res.stream).text());
         if (typeof entry?.text !== 'string') return null;
@@ -86,7 +86,7 @@ export async function POST(request) {
     }
     if (action === 'hide' || action === 'unhide') {
       try {
-        const res = await get(id, { access: 'private' });
+        const res = await get(id, { access: 'private', useCache: false });
         if (!res?.stream) return json(404, { error: 'Entry not found.' });
         const entry = JSON.parse(await new Response(res.stream).text());
         entry.hidden = action === 'hide';

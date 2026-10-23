@@ -13,7 +13,7 @@ const submitLimit = makeLimiter(5);
 
 const readEntry = async blob => {
   try {
-    const res = await get(blob.url, { access: 'private' });
+    const res = await get(blob.url, { access: 'private', useCache: false });
     if (!res?.stream) return null;
     const entry = JSON.parse(await new Response(res.stream).text());
     return typeof entry?.message === 'string' ? { id: blob.pathname, ...entry } : null;
