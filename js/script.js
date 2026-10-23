@@ -996,9 +996,8 @@ function showSlide(index) {
     .then(response => (response.ok ? response.json() : null))
     .then(data => {
       const user = data?.user;
-      if (!user) return;
-      const label = user.role === 'org' ? 'Dashboard' : 'My bookings';
-      const href = user.role === 'org' ? 'admin.html' : 'member.html';
+      const label = !user ? 'Login' : user.role === 'org' ? 'Dashboard' : 'My bookings';
+      const href = !user ? 'login.html' : user.role === 'org' ? 'admin.html' : 'member.html';
       document.querySelectorAll('.nav-right').forEach(group => {
         const link = document.createElement('a');
         link.href = href;
