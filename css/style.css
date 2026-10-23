@@ -1603,11 +1603,8 @@ body[data-page="terms"] .ambient-field__veil{
 .event-banner-poster::before{
   content:"";position:absolute;inset:-.7rem;border:1px solid rgba(241,216,137,.25);pointer-events:none
 }
-.event-banner-media{
-  display:flex;flex-direction:column;gap:2.2rem;
-  max-width:26rem;width:100%;justify-self:center;position:relative
-}
 .event-banner-video{
+  grid-column:1/-1;justify-self:center;max-width:48rem;width:100%;
   position:relative;border-radius:1rem;overflow:hidden;
   border:1px solid rgba(241,216,137,.4);background:#090908;
   box-shadow:0 26px 60px rgba(0,0,0,.4),0 0 45px rgba(217,184,95,.07)
@@ -1641,7 +1638,7 @@ body[data-page="terms"] .ambient-field__veil{
   .event-banner-grid{grid-template-columns:1fr;gap:3.5rem}
   .event-banner-copy h2{padding-left:1.25rem}
   .event-banner-poster{max-width:20rem;justify-self:start;margin-left:.2rem}
-  .event-banner-media{max-width:20rem;justify-self:start;margin-left:.2rem}
+  .event-banner-video{max-width:100%}
 }
 
 /* ============================================================
