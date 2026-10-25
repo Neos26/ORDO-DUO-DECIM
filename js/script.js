@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const statement = footer.querySelector(':scope > .shell > blockquote');
     if (statement) statement.innerHTML = 'ORDO DUO DECIM — Together We <em>Plan, Create, and Celebrate.</em>';
     const details = footer.querySelector('.footer-grid > div:first-child p');
-    if (details) details.innerHTML = 'Address: Arayat Boulevard, Brgy. Pampang, Angeles City, 2009<br>Email: <a href="mailto:jdbonon23-1329@cca.edu.ph">jdbonon23-1329@cca.edu.ph</a><br>Phone: <a href="tel:+639941810919">0994 181 0919</a><br>Hours: Monday–Friday, 8:00 AM–5:00 PM';
+    if (details) details.innerHTML = 'Address: Arayat Boulevard, Brgy. Pampang, Angeles City, 2009<br>Email: <a href="mailto:Ordoduodecim12@gmail.com">Ordoduodecim12@gmail.com</a><br>Phone: <a href="tel:+639941810919">0994 181 0919</a><br>Hours: Monday–Friday, 8:00 AM–5:00 PM';
     const copyright = footer.querySelector('.footer-bottom span:first-child');
     if (copyright) copyright.textContent = '© 2025 Ordo Duo Decim';
     const footerGrid = footer.querySelector('.footer-grid');
@@ -1375,7 +1375,7 @@ function showSlide(index) {
     const contactBlocks = [...document.querySelectorAll('.contact-info > div')];
     const contactBlock = label => contactBlocks.find(block => block.querySelector('span')?.textContent.trim() === label);
     const emailBlock = contactBlock('Email');
-    if (emailBlock) emailBlock.innerHTML = '<span>Email</span><a href="mailto:jdbonon23-1329@cca.edu.ph">jdbonon23-1329@cca.edu.ph</a>';
+    if (emailBlock) emailBlock.innerHTML = '<span>Email</span><a href="mailto:Ordoduodecim12@gmail.com">Ordoduodecim12@gmail.com</a>';
     const addressBlock = contactBlock('Address');
     if (addressBlock) addressBlock.innerHTML = '<span>Address</span><p>Arayat Boulevard, Brgy. Pampang<br>Angeles City, 2009</p>';
     const phoneBlock = contactBlock('Phone');
